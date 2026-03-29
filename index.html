@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Village — Vendas + Meta Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#f4faf6;color:#1a2e1e}
+
+.hero{background:#fff;border-bottom:2px solid #d4edda;padding:28px 40px;text-align:center}
+.logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo div{width:36px;height:36px;background:#2e7d32;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.logo span{font-size:1.3rem;font-weight:800;color:#2e7d32}
+.hero p{color:#6b8f72;font-size:.85rem}
+
+.wrap{max-width:1200px;margin:0 auto;padding:20px}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:18px 0 24px}
+.kpi{background:#fff;border:1px solid #d4edda;border-radius:14px;padding:18px 14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.kpi .n{font-size:1.35rem;font-weight:800;color:#2e7d32}
+.kpi .l{font-size:.65rem;color:#7a9b82;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.kpi .sub{font-size:.72rem;color:#1565c0;font-weight:600;margin-top:4px}
+.kpi.meta{border-left:3px solid #1565c0}
+.kpi.meta .n{color:#1565c0}
+
+.section{margin-bottom:24px}
+.stitle{font-size:.95rem;font-weight:700;color:#1a2e1e;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+.card{background:#fff;border:1px solid #d4edda;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;margin-bottom:16px}
+.card-head{padding:14px 20px;border-bottom:1px solid #e8f5e9}
+.card-head h3{font-size:.9rem;font-weight:700;color:#2e7d32}
+.card-head small{color:#7a9b82;font-size:.76rem}
+.card-body{padding:20px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-box{position:relative;height:340px}
+
+/* META KPI CARDS */
+.meta-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px}
+.meta-kpi{background:#fff;border:1px solid #d4edda;border-radius:14px;padding:18px 14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04);border-top:3px solid #1565c0}
+.meta-kpi .n{font-size:1.3rem;font-weight:800;color:#1565c0}
+.meta-kpi .l{font-size:.65rem;color:#7a9b82;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.meta-kpi .var{display:inline-block;margin-top:6px;font-size:.72rem;font-weight:700;color:#fff;background:#2e7d32;padding:2px 8px;border-radius:10px}
+
+/* VIEWS INPUT */
+.views-section{margin-bottom:10px}
+.views-section .plat-label{padding:10px 20px 4px;font-weight:700;color:#1565c0;font-size:.8rem;border-bottom:1px solid #e3f2fd;background:#f8fbff}
+.views-row{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;padding:16px 20px}
+.views-row.has-label{grid-template-columns:60px repeat(12,1fr)}
+.vc{text-align:center}
+.vc .vm{font-size:.65rem;color:#7a9b82;font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.vc input{width:100%;text-align:center;padding:7px 2px;border:1px solid #d4edda;border-radius:6px;font-size:.9rem;
+  font-weight:700;color:#1565c0;font-family:'DM Sans';background:#fff}
+.vc input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 2px rgba(21,101,192,.1)}
+.vc .info{font-size:.6rem;color:#7a9b82;margin-top:3px}
+.yr-cell{display:flex;align-items:center;justify-content:center;font-weight:800;color:#2e7d32;font-size:.85rem}
+
+/* ADD */
+.add-bar{background:#fff;border:1px solid #d4edda;border-radius:14px;padding:16px 20px;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:end;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.field{display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px}
+.field label{font-size:.65rem;color:#7a9b82;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{padding:8px 10px;border:1px solid #d4edda;border-radius:8px;font-size:.84rem;
+  font-family:'DM Sans';color:#1a2e1e;background:#f9fdfb}
+.field input:focus,.field select:focus{outline:none;border-color:#2e7d32}
+.add-btn{padding:8px 20px;background:#2e7d32;color:#fff;border:none;border-radius:8px;
+  font-size:.84rem;font-weight:700;cursor:pointer;font-family:'DM Sans';white-space:nowrap}
+.add-btn:hover{background:#1b5e20}
+
+/* TABLE */
+.month-block{background:#fff;border:1px solid #d4edda;border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.month-header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;
+  background:linear-gradient(90deg,#e8f5e9,#f1f8e9);border-bottom:1px solid #d4edda;cursor:pointer;user-select:none}
+.month-header h3{font-size:.88rem;font-weight:700;color:#2e7d32}
+.month-header .mt{font-weight:700;color:#1a2e1e;font-size:.88rem}
+.month-header .mc{font-size:.74rem;color:#7a9b82;margin-left:8px}
+table{width:100%;border-collapse:collapse}
+th{font-size:.66rem;text-transform:uppercase;letter-spacing:.5px;color:#7a9b82;font-weight:600;padding:9px 14px;text-align:left;background:#f9fdfb;border-bottom:1px solid #e8f5e9}
+td{padding:9px 14px;border-bottom:1px solid #f0f7f2;font-size:.84rem}
+tr:hover td{background:#f4fef7}
+td.ed{cursor:text;outline:none;border-radius:4px}
+td.ed:focus{background:#e8f5e9;box-shadow:inset 0 0 0 2px #43a047}
+.money{font-weight:600;color:#2e7d32;text-align:right;font-variant-numeric:tabular-nums}
+
+.seller{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:16px;font-size:.74rem;font-weight:600}
+.seller::before{content:'';width:6px;height:6px;border-radius:50%}
+.s-Clara{background:#e3f2fd;color:#1565c0}.s-Clara::before{background:#1565c0}
+.s-Regina{background:#f3e5f5;color:#7b1fa2}.s-Regina::before{background:#7b1fa2}
+.s-Franclim{background:#fff8e1;color:#f57f17}.s-Franclim::before{background:#f57f17}
+.s-Thais{background:#fce4ec;color:#c62828}.s-Thais::before{background:#c62828}
+.s-Vinicius{background:#e0f7fa;color:#00695c}.s-Vinicius::before{background:#00695c}
+
+/* TOP POSTS TABLE */
+.top-table{width:100%;border-collapse:collapse}
+.top-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.5px;color:#7a9b82;font-weight:600;padding:10px 14px;text-align:left;background:#f9fdfb;border-bottom:1px solid #e8f5e9}
+.top-table td{padding:10px 14px;border-bottom:1px solid #f0f7f2;font-size:.82rem}
+.top-table tr:hover td{background:#f4fef7}
+.top-table .num{font-weight:700;color:#1565c0;text-align:right;font-variant-numeric:tabular-nums}
+
+.del{background:none;border:1px solid #ffcdd2;color:#c62828;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.68rem;font-weight:600;font-family:'DM Sans'}
+.del:hover{background:#ffebee}
+
+.exp-bar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px}
+.exp-btn{padding:6px 14px;background:#fff;border:1px solid #d4edda;border-radius:8px;font-size:.76rem;font-weight:600;color:#2e7d32;cursor:pointer;font-family:'DM Sans'}
+.exp-btn:hover{background:#e8f5e9}
+
+.foot{text-align:center;padding:20px;color:#7a9b82;font-size:.74rem}
+
+@media print{.add-bar,.exp-bar,.del{display:none!important}body{background:#fff}.card,.month-block{box-shadow:none;break-inside:avoid}}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(3,1fr)}.meta-kpi-grid{grid-template-columns:repeat(2,1fr)}.wrap{padding:12px}.add-bar{flex-direction:column}.views-row{grid-template-columns:repeat(6,1fr)}.views-row.has-label{grid-template-columns:40px repeat(6,1fr)}.chart-box{height:260px}}
+</style>
+</head>
+<body>
+
+<!-- ══ SECTION 1: HERO + KPIs ══ -->
+<div class="hero">
+  <div class="logo"><div>GV</div><span>Green Village Mobile Homes</span></div>
+  <p>Controlo de Vendas + Analytics Completo · 2025 vs 2026</p>
+</div>
+
+<div class="wrap">
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- ══ SECTION 2: SALES CHARTS ══ -->
+  <div class="section">
+    <div class="stitle">📊 Faturação por Mês — 2025 vs 2026</div>
+    <div class="card">
+      <div class="card-body"><div class="chart-box"><canvas id="cFat"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="stitle">📈 Nº de Vendas por Mês — 2025 vs 2026</div>
+    <div class="card">
+      <div class="card-body"><div class="chart-box"><canvas id="cCount"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="stitle">👥 Resultados por Vendedor — 2025 vs 2026</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><h3>Faturação por Vendedor</h3><small>Comparação anual</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cSelFat"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Nº Vendas por Vendedor</h3><small>Comparação anual</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cSelCount"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ GRÁFICO VISUALIZAÇÕES vs VENDAS ══ -->
+  <div class="section">
+    <div class="stitle">👁 Visualizações vs Vendas Realizadas</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><h3>2025</h3></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cView25"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>2026</h3></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cView26"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 3: META ANALYTICS CHARTS ══ -->
+  <div class="section">
+    <div class="stitle">📱 Meta Business Suite — Março 2026 (dados reais, 1-28 Mar)</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><h3>Visualizações Diárias (Facebook)</h3><small>Total: 2.170.322 | +43.2%</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cMetaViews"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Interações Diárias (Facebook)</h3><small>Total: 37.904 | +36.8%</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cMetaInter"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Visitas ao Facebook Diárias</h3><small>Total: 59.238 | +26.8%</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cMetaVisits"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Novos Seguidores Diários (Facebook)</h3><small>Total: 8.242 | +22%</small></div>
+        <div class="card-body"><div class="chart-box"><canvas id="cMetaFollowers"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 4: TOP POSTS TABLE ══ -->
+  <div class="section">
+    <div class="stitle">🏆 Top Posts — Março 2026 (Meta Business Suite)</div>
+    <div class="card">
+      <div class="card-body" style="padding:0">
+        <table class="top-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th style="text-align:right">Visualizações</th>
+              <th style="text-align:right">Alcance</th>
+              <th style="text-align:right">Interações</th>
+              <th style="text-align:right">Likes</th>
+              <th style="text-align:right">Comentários</th>
+              <th style="text-align:right">Partilhas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600">25 Mar 16:19</td>
+              <td class="num">81.925</td><td class="num">69.156</td><td class="num">1.064</td>
+              <td class="num">880</td><td class="num">34</td><td class="num">38</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">25 Mar 12:32</td>
+              <td class="num">53.338</td><td class="num">45.226</td><td class="num">770</td>
+              <td class="num">648</td><td class="num">16</td><td class="num">20</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">21 Mar 10:11</td>
+              <td class="num">44.764</td><td class="num">35.636</td><td class="num">922</td>
+              <td class="num">770</td><td class="num">18</td><td class="num">21</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">24 Mar 20:26</td>
+              <td class="num">25.934</td><td class="num">21.126</td><td class="num">500</td>
+              <td class="num">412</td><td class="num">35</td><td class="num">17</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">20 Mar 22:10</td>
+              <td class="num">21.968</td><td class="num">15.752</td><td class="num">279</td>
+              <td class="num">257</td><td class="num">4</td><td class="num">3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 5: SOCIAL MEDIA KPIs ══ -->
+  <div class="section">
+    <div class="stitle">📊 Totais Cross-Platform — Dados Confirmados via API (29 Mar 2026 23:24)</div>
+    <div class="meta-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="meta-kpi">
+        <div class="n">101.3M</div>
+        <div class="l">Views Total</div>
+        <div class="var">All-time</div>
+      </div>
+      <div class="meta-kpi">
+        <div class="n">583.128</div>
+        <div class="l">Seguidores Total</div>
+        <div class="var">3 plataformas</div>
+      </div>
+      <div class="meta-kpi">
+        <div class="n">1.8M+</div>
+        <div class="l">Engagement Total</div>
+        <div class="var">Likes+Comments+Shares</div>
+      </div>
+      <div class="meta-kpi">
+        <div class="n">123K</div>
+        <div class="l">GSC Cliques</div>
+        <div class="var">16 meses</div>
+      </div>
+    </div>
+
+    <!-- FACEBOOK -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head" style="background:#e3f2fd"><h3 style="color:#1565c0">Facebook — 14 Paginas</h3><small>Dados via Graph API</small></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+          <div><div style="font-size:1.4rem;font-weight:800;color:#1565c0">64.593.321</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Video Views Total</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#1565c0">218.480</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Seguidores Total</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#1565c0">765</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Posts Publicados</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#1565c0">59.238</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Visitas FB (28d)</div></div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e3f2fd;font-size:.75rem;color:#7a9b82">
+          <strong>Top Paginas:</strong> PT 55.0M | Italia 6.0M |  Bulgaria 3.4M |  España 49K | Brasil 24K | Croacia 18K | Schweiz 17K | França 14K</div>
+      </div>
+    </div>
+
+    <!-- INSTAGRAM -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head" style="background:#fce4ec"><h3 style="color:#c62828">Instagram — @greenvillage.mobilehomes</h3><small>Dados via Instagram Graph API</small></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+          <div><div style="font-size:1.4rem;font-weight:800;color:#c62828">18.750.986</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Views (Abr24-Mar26)</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#c62828">187.348</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Seguidores</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#c62828">677.955</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Likes (1.588 posts)</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#c62828">33.501</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Comments</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;margin-top:12px">
+          <div><div style="font-size:1.1rem;font-weight:700;color:#c62828">26.630.641</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Reach Media</div></div>
+          <div><div style="font-size:1.1rem;font-weight:700;color:#c62828">9.999.474</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Reach Perfil</div></div>
+          <div><div style="font-size:1.1rem;font-weight:700;color:#c62828">689.137</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Visitas Perfil</div></div>
+          <div><div style="font-size:1.1rem;font-weight:700;color:#c62828">66.705</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Cliques em Links</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIKTOK -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head" style="background:#f3e5f5"><h3 style="color:#7b1fa2">TikTok — @greenvillagemobilehomes</h3><small>Dados via TikTok Studio</small></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+          <div><div style="font-size:1.4rem;font-weight:800;color:#7b1fa2">~18.000.000</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Views (365 dias)</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#7b1fa2">177.300</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Seguidores</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#7b1fa2">939.700</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Likes (lifetime)</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#7b1fa2">113.000</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Shares (365d)</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;margin-top:12px">
+          <div><div style="font-size:1.1rem;font-weight:700;color:#7b1fa2">16.000</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Comments (365d)</div></div>
+          <div><div style="font-size:1.1rem;font-weight:700;color:#7b1fa2">213.000</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Profile Views (365d)</div></div>
+          <div><div style="font-size:1.1rem;font-weight:700;color:#7b1fa2">2.200.000</div><div style="font-size:.6rem;color:#7a9b82;text-transform:uppercase">Top Video Views</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOOGLE SEARCH CONSOLE -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head" style="background:#fff8e1"><h3 style="color:#f57f17">Google Search Console — greenvillagemobilehomes.com</h3><small>16 meses (Nov 2024 - Mar 2026)</small></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+          <div><div style="font-size:1.4rem;font-weight:800;color:#f57f17">998.000</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Impressoes</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#f57f17">123.000</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Cliques</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#f57f17">12,3%</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">CTR Medio</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:#f57f17">22,3</div><div style="font-size:.65rem;color:#7a9b82;text-transform:uppercase">Posicao Media</div></div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #fff8e1;font-size:.75rem;color:#7a9b82">
+          <strong>Top Queries:</strong> green village mobile homes (20.050 cliques) | green village (11.158) | greenvillagemobilehomes (5.812) | casas moveis (3.545) | mobile home (2.141)<br>
+          <strong>Top Paises:</strong> Portugal (86.246 cliques / 596K imp.) | Espanha (10.826 / 38K) | Franca (4.910 / 31K) | Italia (4.608 / 16K) | Suica (2.996 / 16K) | Brasil (2.683 / 82K)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 6: VISUALIZAÇÕES INPUT ══ -->
+  <div class="section">
+    <div class="stitle">✏️ Visualizações Mensais <span style="font-size:.75rem;font-weight:400;color:#7a9b82">— edite e os gráficos atualizam</span></div>
+    <div class="card" id="viewsCard"></div>
+  </div>
+
+  <!-- ══ SECTION 7: ADD SALE FORM ══ -->
+  <div class="section">
+    <div class="stitle">➕ Nova Venda</div>
+    <div class="add-bar">
+      <div class="field"><label>Mês / Ano</label>
+        <select id="aMonth"><option>JANEIRO 2025</option><option>FEVEREIRO 2025</option><option>MARÇO 2025</option><option>ABRIL 2025</option><option>MAIO 2025</option><option>JUNHO 2025</option><option>JULHO 2025</option><option>AGOSTO 2025</option><option>SETEMBRO 2025</option><option>OUTUBRO 2025</option><option>NOVEMBRO 2025</option><option>DEZEMBRO 2025</option><option>JANEIRO 2026</option><option>FEVEREIRO 2026</option><option selected>MARÇO 2026</option><option>ABRIL 2026</option><option>MAIO 2026</option><option>JUNHO 2026</option><option>JULHO 2026</option><option>AGOSTO 2026</option><option>SETEMBRO 2026</option><option>OUTUBRO 2026</option><option>NOVEMBRO 2026</option><option>DEZEMBRO 2026</option></select></div>
+      <div class="field"><label>Cliente</label><input id="aCli" placeholder="Nome"></div>
+      <div class="field"><label>Valor €</label><input id="aVal" type="number" step="0.01" placeholder="0,00"></div>
+      <div class="field"><label>Modelo</label><input id="aMod" placeholder="Modelo"></div>
+      <div class="field"><label>Vendedor(a)</label>
+        <select id="aSel"><option>Clara</option><option>Regina</option><option>Franclim</option><option>Thaís</option><option>Vinícius</option></select></div>
+      <button class="add-btn" onclick="addSale()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 8: SALES TABLE ══ -->
+  <div class="section">
+    <div class="stitle">📋 Vendas Detalhadas</div>
+    <div class="exp-bar">
+      <button class="exp-btn" onclick="toCSV()">⬇ CSV</button>
+      <button class="exp-btn" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+    <div id="content"></div>
+  </div>
+
+</div>
+<div class="foot">Green Village Mobile Homes © 2025–2026</div>
+
+<script>
+// ══════════════════════════════════════════════
+// SALES DATA
+// ══════════════════════════════════════════════
+let S=[
+{m:"JANEIRO 2025",c:"Tânia",v:13000,mod:"IRM",s:"Clara"},{m:"JANEIRO 2025",c:"Seomara",v:13000,mod:"Ohara",s:"Clara"},
+{m:"FEVEREIRO 2025",c:"Filipe",v:12500,mod:"Delta",s:"Clara"},{m:"FEVEREIRO 2025",c:"Aldina",v:14000,mod:"IRM",s:"Clara"},{m:"FEVEREIRO 2025",c:"Vítor",v:28000,mod:"Sheraton",s:"Clara"},{m:"FEVEREIRO 2025",c:"Manuela",v:15000,mod:"Chalé",s:"Clara"},{m:"FEVEREIRO 2025",c:"Josicleide",v:25000,mod:"Atlas",s:"Clara"},{m:"FEVEREIRO 2025",c:"Luana",v:13000,mod:"Cosalt",s:"Clara"},{m:"FEVEREIRO 2025",c:"Verónica",v:29000,mod:"ABI Polaris",s:"Clara"},{m:"FEVEREIRO 2025",c:"Domingos",v:35000,mod:"ABI Westwood",s:"Clara"},
+{m:"MARÇO 2025",c:"Rui",v:14000,mod:"IRM",s:"Clara"},{m:"MARÇO 2025",c:"Marina",v:18000,mod:"Torino",s:"Clara"},{m:"MARÇO 2025",c:"Vinícius",v:16000,mod:"Delta",s:"Clara"},{m:"MARÇO 2025",c:"Nuno",v:30000,mod:"Cosalt",s:"Clara"},{m:"MARÇO 2025",c:"Andrea",v:30000,mod:"ABI Westwood",s:"Clara"},
+{m:"ABRIL 2025",c:"Luís",v:21000,mod:"Willerby",s:"Clara"},{m:"ABRIL 2025",c:"Jorge",v:15000,mod:"Chalé",s:"Clara"},{m:"ABRIL 2025",c:"Vânia",v:25000,mod:"Atlas",s:"Clara"},
+{m:"MAIO 2025",c:"Flora",v:22000,mod:"Sheraton",s:"Clara"},{m:"MAIO 2025",c:"Daniel",v:16500,mod:"ABI",s:"Clara"},{m:"MAIO 2025",c:"Deyse",v:15000,mod:"IRM",s:"Clara"},
+{m:"JUNHO 2025",c:"Paula",v:15000,mod:"Chalé",s:"Clara"},{m:"JUNHO 2025",c:"Dinis",v:30750,mod:"Capri",s:"Clara"},{m:"JUNHO 2025",c:"Tiago",v:15000,mod:"Cosalt",s:"Clara"},{m:"JUNHO 2025",c:"Dinis",v:18450,mod:"Chalé",s:"Clara"},{m:"JUNHO 2025",c:"Ricardo",v:26500,mod:"ABI",s:"Clara"},
+{m:"JULHO 2025",c:"Maria",v:11150,mod:"Atlas",s:"Franclim"},{m:"JULHO 2025",c:"Filipe",v:15928,mod:"Lima",s:"Regina"},{m:"JULHO 2025",c:"Márcio",v:16500,mod:"Atlas",s:"Regina"},{m:"JULHO 2025",c:"Débora",v:15500,mod:"Cosalt",s:"Clara"},{m:"JULHO 2025",c:"Bruno",v:16000,mod:"Atlas",s:"Clara"},{m:"JULHO 2025",c:"Ana",v:8000,mod:"Chalé",s:"Regina"},{m:"JULHO 2025",c:"Alexandre",v:13700,mod:"Chalé de Madeira",s:"Franclim"},
+{m:"AGOSTO 2025",c:"Ana",v:15200,mod:"Atlas",s:"Clara"},{m:"AGOSTO 2025",c:"Gonçalo",v:20000,mod:"ABI Horizon",s:"Clara"},{m:"AGOSTO 2025",c:"Lisete",v:14500,mod:"Cosalt",s:"Regina"},{m:"AGOSTO 2025",c:"Arnaldo",v:36900,mod:"ABI Westwood",s:"Regina"},{m:"AGOSTO 2025",c:"Idália",v:8000,mod:"Delta",s:"Clara"},{m:"AGOSTO 2025",c:"Natália",v:10000,mod:"Muller",s:"Franclim"},{m:"AGOSTO 2025",c:"Sérgio",v:10000,mod:"Topline",s:"Franclim"},{m:"AGOSTO 2025",c:"Regina",v:10000,mod:"Nordstar",s:"Franclim"},{m:"AGOSTO 2025",c:"Carlos",v:14700,mod:"Atlas",s:"Clara"},{m:"AGOSTO 2025",c:"Sónia",v:22000,mod:"Rapdhome e Chalé",s:"Franclim"},{m:"AGOSTO 2025",c:"Pedro",v:16500,mod:"Willerby",s:"Franclim"},
+{m:"SETEMBRO 2025",c:"Marcos",v:10000,mod:"Muller",s:"Franclim"},{m:"SETEMBRO 2025",c:"Carla",v:18500,mod:"Delta",s:"Regina"},{m:"SETEMBRO 2025",c:"Luísa",v:60800,mod:"ABI e Atlas",s:"Regina"},{m:"SETEMBRO 2025",c:"David",v:16000,mod:"Torino",s:"Regina"},{m:"SETEMBRO 2025",c:"Joana",v:20000,mod:"Willerby",s:"Regina"},{m:"SETEMBRO 2025",c:"São",v:20000,mod:"Willerby",s:"Regina"},{m:"SETEMBRO 2025",c:"Jiri",v:33500,mod:"Pemberton",s:"Franclim"},{m:"SETEMBRO 2025",c:"Fábio",v:30000,mod:"Chalé",s:"Franclim"},
+{m:"OUTUBRO 2025",c:"Marco",v:15000,mod:"BK",s:"Regina"},{m:"OUTUBRO 2025",c:"Carlos",v:23500,mod:"Chalé",s:"Regina"},{m:"OUTUBRO 2025",c:"Albertino",v:20700,mod:"Atlas",s:"Franclim"},{m:"OUTUBRO 2025",c:"Filipe",v:20000,mod:"Aspen",s:"Clara"},{m:"OUTUBRO 2025",c:"Sílvia",v:17000,mod:"Ohara",s:"Clara"},{m:"OUTUBRO 2025",c:"Tiago",v:25000,mod:"Atlas",s:"Regina"},
+{m:"NOVEMBRO 2025",c:"Franclin",v:17450,mod:"Atlas",s:"Clara"},{m:"NOVEMBRO 2025",c:"Rafael",v:10000,mod:"Chalé",s:"Regina"},{m:"NOVEMBRO 2025",c:"Sandra",v:28000,mod:"Willerby",s:"Regina"},{m:"NOVEMBRO 2025",c:"Elsa",v:11450,mod:"Chalé",s:"Franclim"},{m:"NOVEMBRO 2025",c:"Sónia",v:43000,mod:"Luxury Lodge",s:"Franclim"},{m:"NOVEMBRO 2025",c:"Carla",v:19300,mod:"BK",s:"Franclim"},{m:"NOVEMBRO 2025",c:"Igor",v:14200,mod:"Delta",s:"Franclim"},
+{m:"DEZEMBRO 2025",c:"Richelme",v:11400,mod:"Chalé",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Rafael",v:11400,mod:"Chalé",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Paulo",v:17000,mod:"Pemberton",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Gilsom",v:11850,mod:"Chalé",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Lucineia",v:8500,mod:"Chalé",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Paulo",v:33981,mod:"Contentor",s:"Franclim"},{m:"DEZEMBRO 2025",c:"Edmundo",v:33846,mod:"Atlas",s:"Regina"},{m:"DEZEMBRO 2025",c:"Michaela",v:12400,mod:"Willerby",s:"Regina"},{m:"DEZEMBRO 2025",c:"Manuel",v:30600,mod:"Atlas (2 casas)",s:"Franclim"},
+{m:"JANEIRO 2026",c:"José Manuel Pinto",v:22400,mod:"Atlas Miragem",s:"Franclim"},{m:"JANEIRO 2026",c:"Gabriel",v:12000,mod:"IRM Mercure",s:"Franclim"},{m:"JANEIRO 2026",c:"Maria",v:11000,mod:"Wanders Chalet Opknapper",s:"Regina"},{m:"JANEIRO 2026",c:"Rogério",v:15867,mod:"Atlas Prelude",s:"Regina"},{m:"JANEIRO 2026",c:"Abel",v:18350,mod:"Atlas Florida",s:"Franclim"},
+{m:"FEVEREIRO 2026",c:"José Manuel Pinto",v:14910,mod:"Willerby Vacation",s:"Franclim"},{m:"FEVEREIRO 2026",c:"Adélia",v:12375,mod:"Cosalt Carlton",s:"Thaís"},{m:"FEVEREIRO 2026",c:"Rogério",v:10650,mod:"Atlas Sherwood",s:"Regina"},{m:"FEVEREIRO 2026",c:"Ana",v:11419,mod:"Willerby Westbury",s:"Regina"},{m:"FEVEREIRO 2026",c:"Leandro (Gilson)",v:10000,mod:"Willerby Granada",s:"Regina"},{m:"FEVEREIRO 2026",c:"Cainã",v:17000,mod:"CC38 Chalet",s:"Franclim"},
+{m:"MARÇO 2026",c:"Fernando Alexandre",v:21525,mod:"Willerby Salisbury",s:"Thaís"},{m:"MARÇO 2026",c:"Gilson (Leandro)",v:10000,mod:"Modelo não informado",s:"Franclim"},{m:"MARÇO 2026",c:"Irene",v:39975,mod:"Contentor Expansível",s:"Franclim"},{m:"MARÇO 2026",c:"Eduarda",v:100890.75,mod:"GV Edera Open",s:"Thaís"},{m:"MARÇO 2026",c:"David",v:13913.76,mod:"Delta Santana",s:"Regina"},{m:"MARÇO 2026",c:"Cátia Sofia",v:19211.37,mod:"Atlas Everglade",s:"Franclim"},{m:"MARÇO 2026",c:"Fábio André",v:27875,mod:"Pemberton Park Lane",s:"Thaís"},{m:"MARÇO 2026",c:"Mary Darks",v:12400,mod:"Atlas Everglade",s:"Thaís"},{m:"MARÇO 2026",c:"Leonardo",v:9850,mod:"Cosalt 2 Quartos",s:"Regina"},{m:"MARÇO 2026",c:"Tânia",v:11719,mod:"BK Bluebird Super Carnival",s:"Thaís"},{m:"MARÇO 2026",c:"Rogério",v:11719,mod:"Willerby Shrewsbury",s:"Regina"},{m:"MARÇO 2026",c:"Justino Miguel",v:16816.56,mod:"Willerby Granada",s:"Vinícius"},
+];
+
+// ══════════════════════════════════════════════
+// META BUSINESS SUITE DATA (March 1-28, 2026)
+// ══════════════════════════════════════════════
+const metaDailyViews=[129131,74232,60196,69963,52994,51751,42562,55082,54058,38140,46930,59750,81938,139580,171001,87933,68170,62872,76488,63820,82701,104989,71194,94327,114636,77793,54853,83238];
+const metaDailyInteractions=[2350,1422,1075,1253,924,989,839,941,1013,685,851,980,1376,2194,2570,1379,1013,935,1032,838,1396,2335,1632,1791,2009,1338,1109,1635];
+const metaDailyVisits=[3124,1841,1469,1799,1322,1331,1249,1565,1431,1116,1441,1336,1764,4108,4801,2392,1813,1729,2155,1551,2507,3373,2267,2698,3069,1941,1843,2203];
+const metaDailyFollowers=[413,288,203,230,154,187,147,205,208,150,176,208,213,417,456,257,200,227,255,230,408,669,430,469,480,272,242,448];
+const metaDayLabels=Array.from({length:28},(_,i)=>(i+1).toString());
+
+// ══════════════════════════════════════════════
+// VIEWS DATA (multi-platform)
+// ══════════════════════════════════════════════
+const PLATFORMS=['Facebook','Instagram','Google','TikTok'];
+let views={};
+PLATFORMS.forEach(p=>{
+  views[p]={2025:{Jan:0,Fev:0,Mar:0,Abr:0,Mai:0,Jun:0,Jul:0,Ago:0,Set:0,Out:0,Nov:0,Dez:0},
+            2026:{Jan:0,Fev:0,Mar:0,Abr:0,Mai:0,Jun:0,Jul:0,Ago:0,Set:0,Out:0,Nov:0,Dez:0}};
+});
+
+// ══════════════════════════════════════════════
+// CONSTANTS & HELPERS
+// ══════════════════════════════════════════════
+const ML=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+const MS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const fmt=v=>v.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const fmtK=v=>v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k €':v.toFixed(0)+' €';
+const fmtN=v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(v>=10000?0:1)+'K':v.toString();
+const yr=m=>m.split(' ').pop();
+const sb=s=>{const c=s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');return `<span class="seller s-${c}">${s}</span>`};
+const COLORS={Clara:'#1565c0',Regina:'#7b1fa2',Franclim:'#f57f17','Thaís':'#c62828','Vinícius':'#00695c'};
+const COLORS_LIGHT={Clara:'rgba(21,101,192,.2)',Regina:'rgba(123,31,162,.2)',Franclim:'rgba(245,127,23,.2)','Thaís':'rgba(198,40,40,.2)','Vinícius':'rgba(0,105,92,.2)'};
+
+let charts={};
+
+// ══════════════════════════════════════════════
+// DATA FUNCTIONS
+// ══════════════════════════════════════════════
+function getMonthly(year){
+  const d=Array(12).fill(0),c=Array(12).fill(0);
+  S.filter(x=>yr(x.m)===String(year)).forEach(x=>{const i=ML.indexOf(x.m.split(' ')[0]);if(i>=0){d[i]+=x.v;c[i]++}});
+  return{vals:d,counts:c};
+}
+
+function getSellersByYear(year){
+  const d={};
+  S.filter(x=>yr(x.m)===String(year)).forEach(x=>{if(!d[x.s])d[x.s]={total:0,count:0};d[x.s].total+=x.v;d[x.s].count++});
+  return d;
+}
+
+function allSellers(){return[...new Set(S.map(x=>x.s))].sort()}
+
+function getTotalViews(year){
+  let t=0;
+  PLATFORMS.forEach(p=>{MS.forEach(m=>{t+=views[p][year][m]})});
+  return t;
+}
+
+// ══════════════════════════════════════════════
+// BUILD FUNCTIONS
+// ══════════════════════════════════════════════
+function buildKPIs(){
+  const tot=S.reduce((a,x)=>a+x.v,0);
+  const s25=S.filter(x=>yr(x.m)==='2025'),s26=S.filter(x=>yr(x.m)==='2026');
+  const t25=s25.reduce((a,x)=>a+x.v,0),t26=s26.reduce((a,x)=>a+x.v,0);
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="kpi"><div class="n">${S.length}</div><div class="l">Total Vendas</div></div>
+    <div class="kpi"><div class="n">${fmt(tot)}</div><div class="l">Faturação Total</div></div>
+    <div class="kpi"><div class="n">${s25.length} vendas</div><div class="l">2025</div><div class="sub">${fmt(t25)}</div></div>
+    <div class="kpi"><div class="n">${s26.length} vendas</div><div class="l">2026</div><div class="sub">${fmt(t26)}</div></div>
+    <div class="kpi meta"><div class="n">101.3M</div><div class="l">Views Total</div><div class="sub">64.6M FB + 18.8M IG + 18.0M TT</div></div>
+    <div class="kpi meta"><div class="n">583K</div><div class="l">Seguidores Total</div><div class="sub">218K FB + 187K IG + 177K TT</div></div>`;
+}
+
+function buildViews(){
+  let h='';
+  PLATFORMS.forEach(plat=>{
+    h+=`<div class="plat-label">📱 ${plat}</div>`;
+    [2025,2026].forEach(y=>{
+      h+=`<div style="padding:8px 20px 2px;font-weight:700;color:#2e7d32;font-size:.8rem">${y}</div>`;
+      h+=`<div class="views-row">`;
+      MS.forEach((m,i)=>{
+        const sl=S.filter(x=>yr(x.m)===String(y)&&ML.indexOf(x.m.split(' ')[0])===i);
+        h+=`<div class="vc"><div class="vm">${m}</div>
+          <input type="number" value="${views[plat][y][m]}" min="0" onchange="views['${plat}'][${y}]['${m}']=parseInt(this.value)||0;updateCharts()">
+          <div class="info">${sl.length}v · ${fmtK(sl.reduce((a,x)=>a+x.v,0))}</div></div>`;
+      });
+      h+=`</div>`;
+    });
+  });
+  document.getElementById('viewsCard').innerHTML=h;
+}
+
+function makeChart(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);return charts[id]}
+
+function updateCharts(){
+  const d25=getMonthly(2025),d26=getMonthly(2026);
+  const sel25=getSellersByYear(2025),sel26=getSellersByYear(2026);
+  const sellers=allSellers();
+
+  // Combined views per month (all platforms)
+  const v25=MS.map(m=>{let t=0;PLATFORMS.forEach(p=>{t+=views[p][2025][m]});return t});
+  const v26=MS.map(m=>{let t=0;PLATFORMS.forEach(p=>{t+=views[p][2026][m]});return t});
+
+  const font={family:'DM Sans'};
+  const gridColor='#e8f5e9';
+
+  // 1) FATURAÇÃO MENSAL
+  makeChart('cFat',{type:'bar',data:{labels:MS,datasets:[
+    {label:'2025',data:d25.vals,backgroundColor:'rgba(46,125,50,.5)',borderColor:'#2e7d32',borderWidth:1,borderRadius:5,barPercentage:.45},
+    {label:'2026',data:d26.vals,backgroundColor:'rgba(21,101,192,.5)',borderColor:'#1565c0',borderWidth:1,borderRadius:5,barPercentage:.45}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyle:'rectRounded',padding:20,font:{...font,size:13,weight:'600'}}}},
+    scales:{y:{ticks:{callback:v=>fmtK(v),font},grid:{color:gridColor}},x:{grid:{display:false},ticks:{font}}}}});
+
+  // 2) Nº VENDAS POR MÊS
+  makeChart('cCount',{type:'line',data:{labels:MS,datasets:[
+    {label:'2025',data:d25.counts,borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.08)',pointBackgroundColor:'#2e7d32',pointRadius:6,pointHoverRadius:8,fill:true,tension:.3,borderWidth:3},
+    {label:'2026',data:d26.counts,borderColor:'#1565c0',backgroundColor:'rgba(21,101,192,.08)',pointBackgroundColor:'#1565c0',pointRadius:6,pointHoverRadius:8,fill:true,tension:.3,borderWidth:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:20,font:{...font,size:13,weight:'600'}}}},
+    scales:{y:{ticks:{stepSize:1,font},grid:{color:gridColor}},x:{grid:{display:false},ticks:{font}}}}});
+
+  // 3) FATURAÇÃO POR VENDEDOR
+  makeChart('cSelFat',{type:'bar',data:{labels:sellers,datasets:[
+    {label:'2025',data:sellers.map(s=>sel25[s]?sel25[s].total:0),backgroundColor:'rgba(46,125,50,.5)',borderColor:'#2e7d32',borderWidth:1,borderRadius:5,barPercentage:.5},
+    {label:'2026',data:sellers.map(s=>sel26[s]?sel26[s].total:0),backgroundColor:'rgba(21,101,192,.5)',borderColor:'#1565c0',borderWidth:1,borderRadius:5,barPercentage:.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyle:'rectRounded',padding:16,font:{...font,size:12,weight:'600'}}}},
+    scales:{x:{ticks:{callback:v=>fmtK(v),font},grid:{color:gridColor}},y:{ticks:{font:{...font,weight:'600'}},grid:{display:false}}}}});
+
+  // 4) Nº VENDAS POR VENDEDOR
+  makeChart('cSelCount',{type:'bar',data:{labels:sellers,datasets:[
+    {label:'2025',data:sellers.map(s=>sel25[s]?sel25[s].count:0),backgroundColor:'rgba(46,125,50,.5)',borderColor:'#2e7d32',borderWidth:1,borderRadius:5,barPercentage:.5},
+    {label:'2026',data:sellers.map(s=>sel26[s]?sel26[s].count:0),backgroundColor:'rgba(21,101,192,.5)',borderColor:'#1565c0',borderWidth:1,borderRadius:5,barPercentage:.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyle:'rectRounded',padding:16,font:{...font,size:12,weight:'600'}}}},
+    scales:{x:{ticks:{stepSize:1,font},grid:{color:gridColor}},y:{ticks:{font:{...font,weight:'600'}},grid:{display:false}}}}});
+
+  // 5) VIEWS vs VENDAS 2025
+  makeChart('cView25',{data:{labels:MS,datasets:[
+    {type:'bar',label:'Visualizações',data:v25,backgroundColor:'rgba(46,125,50,.15)',borderColor:'#2e7d32',borderWidth:2,borderRadius:5,barPercentage:.6,yAxisID:'y'},
+    {type:'line',label:'Vendas',data:d25.counts,borderColor:'#f57f17',backgroundColor:'rgba(245,127,23,.08)',pointBackgroundColor:'#f57f17',pointRadius:5,fill:true,tension:.3,borderWidth:2.5,yAxisID:'y1'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{...font,size:11,weight:'600'}}}},
+    scales:{y:{position:'left',title:{display:true,text:'Visualizações',font:{...font,size:11}},grid:{color:gridColor}},y1:{position:'right',title:{display:true,text:'Vendas',font:{...font,size:11}},grid:{display:false}},x:{grid:{display:false}}}}});
+
+  // 6) VIEWS vs VENDAS 2026
+  makeChart('cView26',{data:{labels:MS,datasets:[
+    {type:'bar',label:'Visualizações',data:v26,backgroundColor:'rgba(21,101,192,.15)',borderColor:'#1565c0',borderWidth:2,borderRadius:5,barPercentage:.6,yAxisID:'y'},
+    {type:'line',label:'Vendas',data:d26.counts,borderColor:'#f57f17',backgroundColor:'rgba(245,127,23,.08)',pointBackgroundColor:'#f57f17',pointRadius:5,fill:true,tension:.3,borderWidth:2.5,yAxisID:'y1'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{...font,size:11,weight:'600'}}}},
+    scales:{y:{position:'left',title:{display:true,text:'Visualizações',font:{...font,size:11}},grid:{color:gridColor}},y1:{position:'right',title:{display:true,text:'Vendas',font:{...font,size:11}},grid:{display:false}},x:{grid:{display:false}}}}});
+
+  // ══ META ANALYTICS CHARTS ══
+  const metaChartOpts=(label,color,borderCol)=>({
+    type:'line',
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmtN(ctx.parsed.y)+' '+label}}},
+      scales:{
+        y:{ticks:{callback:v=>fmtN(v),font},grid:{color:'#e8f5e9'}},
+        x:{grid:{display:false},ticks:{font:{...font,size:10},maxTicksLimit:14}}
+      },
+      elements:{point:{radius:2,hoverRadius:5}}
+    }
+  });
+
+  // META VIEWS
+  makeChart('cMetaViews',{
+    ...metaChartOpts('visualizações','rgba(21,101,192,.12)','#1565c0'),
+    data:{labels:metaDayLabels,datasets:[{
+      label:'Visualizações',data:metaDailyViews,
+      borderColor:'#1565c0',backgroundColor:'rgba(21,101,192,.08)',
+      fill:true,tension:.3,borderWidth:2.5
+    }]}
+  });
+
+  // META INTERACTIONS
+  makeChart('cMetaInter',{
+    ...metaChartOpts('interações','rgba(46,125,50,.12)','#2e7d32'),
+    data:{labels:metaDayLabels,datasets:[{
+      label:'Interações',data:metaDailyInteractions,
+      borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.08)',
+      fill:true,tension:.3,borderWidth:2.5
+    }]}
+  });
+
+  // META VISITS
+  makeChart('cMetaVisits',{
+    ...metaChartOpts('visitas','rgba(123,31,162,.12)','#7b1fa2'),
+    data:{labels:metaDayLabels,datasets:[{
+      label:'Visitas',data:metaDailyVisits,
+      borderColor:'#7b1fa2',backgroundColor:'rgba(123,31,162,.08)',
+      fill:true,tension:.3,borderWidth:2.5
+    }]}
+  });
+
+  // META FOLLOWERS
+  makeChart('cMetaFollowers',{
+    ...metaChartOpts('seguidores','rgba(245,127,23,.12)','#f57f17'),
+    data:{labels:metaDayLabels,datasets:[{
+      label:'Novos Seguidores',data:metaDailyFollowers,
+      borderColor:'#f57f17',backgroundColor:'rgba(245,127,23,.08)',
+      fill:true,tension:.3,borderWidth:2.5
+    }]}
+  });
+}
+
+function buildTable(){
+  const g={};S.forEach(x=>{if(!g[x.m])g[x.m]=[];g[x.m].push(x)});
+  const months=Object.keys(g).sort((a,b)=>{const[ma,ya]=[a.split(' ')[0],a.split(' ')[1]];const[mb,yb]=[b.split(' ')[0],b.split(' ')[1]];return ya!==yb?ya-yb:ML.indexOf(ma)-ML.indexOf(mb)});
+  let html='',lastY='',num=0;
+  months.forEach(m=>{
+    const y=yr(m);
+    if(y!==lastY){html+=`<div style="text-align:center;padding:12px 0 4px;font-weight:800;color:#2e7d32;font-size:1rem;letter-spacing:1px">── ${y} ──</div>`;lastY=y}
+    const items=g[m],mTot=items.reduce((a,x)=>a+x.v,0);
+    html+=`<div class="month-block"><div class="month-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+      <h3>📅 ${m}</h3><div><span class="mt">${fmt(mTot)}</span><span class="mc">${items.length} vendas</span></div></div>
+      <div><table><thead><tr><th style="width:32px">Nº</th><th>Cliente</th><th style="text-align:right">Valor</th><th>Modelo</th><th>Vendedor</th><th style="width:32px"></th></tr></thead><tbody>`;
+    items.forEach(x=>{num++;const idx=S.indexOf(x);
+      html+=`<tr><td style="text-align:center;color:#7a9b82;font-size:.74rem">${num}</td>
+        <td class="ed" contenteditable="true" onblur="S[${idx}].c=this.textContent.trim()" style="font-weight:500">${x.c}</td>
+        <td class="ed money" contenteditable="true" onblur="updV(${idx},this.textContent)">${fmt(x.v)}</td>
+        <td class="ed" contenteditable="true" onblur="S[${idx}].mod=this.textContent.trim()">${x.mod}</td>
+        <td>${sb(x.s)}</td>
+        <td><button class="del" onclick="del(${idx})">✕</button></td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  document.getElementById('content').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════
+function updV(i,t){const n=parseFloat(t.replace(/[^\d.,]/g,'').replace(/\./g,'').replace(',','.'));if(!isNaN(n)){S[i].v=n;renderAll()}}
+
+function addSale(){
+  const c=document.getElementById('aCli').value.trim(),v=parseFloat(document.getElementById('aVal').value),mod=document.getElementById('aMod').value.trim();
+  if(!c||!v||!mod){alert('Preencha cliente, valor e modelo.');return}
+  S.push({m:document.getElementById('aMonth').value,c,v,mod,s:document.getElementById('aSel').value});
+  document.getElementById('aCli').value='';document.getElementById('aVal').value='';document.getElementById('aMod').value='';renderAll();
+}
+
+function del(i){if(confirm('Remover '+S[i].c+'?')){S.splice(i,1);renderAll()}}
+
+function toCSV(){
+  let csv='\ufeffNº;Mês;Cliente;Valor;Modelo;Vendedor\n';
+  S.forEach((x,i)=>{csv+=`${i+1};"${x.m}";"${x.c}";${x.v};"${x.mod}";"${x.s}"\n`});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='vendas_greenvillage.csv';a.click();
+}
+
+function renderAll(){buildKPIs();buildViews();buildTable();updateCharts()}
+renderAll();
+</script>
+</body>
+</html>
